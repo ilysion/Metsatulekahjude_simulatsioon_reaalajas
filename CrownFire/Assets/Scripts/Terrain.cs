@@ -6,61 +6,46 @@ using UnityEngine.UI;
 public class Terrain : MonoBehaviour
 {
     public static Terrain instance;
-
+    public Chunk[] chunks;
     public Material chunkMaterial;
     public Material BurnAreaMaterial;
-    
     public Camera burnRenderCam;
     public Camera mainRenderCam;
-
-    public int vcountx = 3; //Vertex count x
-    public int vcounty = 3; //Vertex count y
-    public int ccountx = 3; //Chunk count x
-    public int ccounty = 3; //Chunk count y
     public Vector3 scale = new Vector3(10f, 2f, 10f);
     public Texture flameStartingPoint;
     public Text PassCounterText;
     public Button passButton50;
-    
-    public float speedMultiplier = 1;
-    
-
     private Texture2D mapDataTexture;
     private RenderTexture mapDataRenderTexture;
     private RenderTexture aoRenderTexture;
     private RenderTexture burnAreaTexture;
-    private bool orto = true;
-    //private Test1BurnRenderer burnRenderer;
     private BurnRenderer burnRenderer;
     private MapRenderer mapRenderer;
     private bool realtimeActive = true;
     private int passCounter;
-    
-
+    private bool orto = true;
     public int lodCount = 5;
     public float lodDistance = 10f;
-    public Chunk[] chunks;
-
     private float timePassed = 0f;
     private float lastRenderTime = 0f;
     private float timeBetweenRenders = 1f;
-
     private bool isTerrainRendered = false;
-
+    public float speedMultiplier = 1;
+    public int vcountx = 3; //Vertex count x
+    public int vcounty = 3; //Vertex count y
+    public int ccountx = 3; //Chunk count x
+    public int ccounty = 3; //Chunk count y
     public void Awake()
     {
         chunkMaterial.SetTexture("_BurningTex", flameStartingPoint);
         instance = this;
-        
     }
 
     public void Start()
     {
         passButton50.onClick.AddListener(Render50Passes);
         this.mapRenderer = mainRenderCam.GetComponent<MapRenderer>();
-        //this.burnRenderer = burnRenderCam.GetComponent<Test1BurnRenderer>();
         this.burnRenderer = burnRenderCam.GetComponent<BurnRenderer>();
-        
     }
 
     public void Update()
@@ -90,7 +75,6 @@ public class Terrain : MonoBehaviour
             {
                 BurnAreaMaterial.SetFloat("_Delta", timePassed);
                 burnRenderer.RenderTerrain();
-                //Remove this if no need for updating every time
                 if (!isTerrainRendered)
                 {
                     mapRenderer.RenderTerrain();
@@ -101,8 +85,6 @@ public class Terrain : MonoBehaviour
                 AddPasses(1);
             }
         }
-
-
     }
 
     public void AddPasses(int count)
@@ -144,17 +126,13 @@ public class Terrain : MonoBehaviour
 
     public void GenerateTerrain()
     {
-
-        //float time = Time.realtimeSinceStartup;
         DeleteChunks();
         chunks = new Chunk[ccountx * ccounty];
         Color[] mapCols = mapDataTexture.GetPixels();
-
         chunkMaterial.SetTexture("_MainTex", mapDataRenderTexture);
         chunkMaterial.SetTexture("_OcclusionMap", aoRenderTexture);
         chunkMaterial.SetTexture("_BurningTex", burnAreaTexture);
         BurnAreaMaterial.SetTexture("_MainTex", mapDataRenderTexture);
-        //meshRenderer.material.SetColor("_Color", Color.red);
 
         for (int i = 0; i < ccountx; i++)
         {
@@ -164,18 +142,12 @@ public class Terrain : MonoBehaviour
                 float fy = 1.0f / (float)ccounty;
                 Vector2 start = new Vector2(i * fx, j * fy);
                 Vector2 size = new Vector2(fx, fy);
-
-
                 Chunk leftChunk = i > 0 ? chunks[ccountx * j + (i - 1)] : null;
                 Chunk upChunk = j > 0 ? chunks[ccountx * (j - 1) + i] : null;
-
-
                 Chunk chunk = GenerateChunk(leftChunk, upChunk, start, size, mapCols);
-
                 chunks[ccountx * j + i] = chunk;
             }
         }
-        //Debug.Log("Generation time: " + (Time.realtimeSinceStartup - time));
     }
 
     public void DeleteChunks()

@@ -6,19 +6,14 @@
 		_LidarMap("LidarMap (RGB)", 2D) = "white" {}
 		_Noise("Noise (RGB)", 2D) = "white" {}
 		_HeightScale("Skaalariba (RGB)", 2D) = "white" {}
-
-
 		_TexScale("Texture scale", Float) = 1.0
-
 		_Color("Color", Color) = (1,1,1,1)
 		_BurntColor("BurntColor", Color) = (1,1,1,1)
 		_BurningColor("BurningColor", Color) = (1,1,1,1)
 
-
 		_Delta("delta", Float) = 0.0
 		_GivenSampleRadius("givenSampleRadius", Float) = 0.001
 		_GivenSampleCount("givenSampleCount", Float) = 10.0
-
 		_GivenCoils("givenCoilsCount", Float) = 2
 		_NoiseAmmount("noiseAmmount", Float) = 1.0
 	}
@@ -32,9 +27,7 @@
 				CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
-				// make fog work
 				#pragma multi_compile_fog
-
 				#include "UnityCG.cginc"
 
 			sampler2D _MainTex;
@@ -42,21 +35,17 @@
 			sampler2D _LidarMap;
 			sampler2D _Noise;
 			sampler2D _HeightScale;
-
 			uniform float4 _MainTex_TexelSize;
 			uniform half _TexScale;
-
 			uniform fixed4 _Color;
 			uniform fixed4 _BurntColor;
 			uniform fixed4 _BurningColor;
-
 			float _Delta;
 			float _GivenSampleRadius;
 			float _GivenSampleCount;
 			float _NoiseAmmount;
 			float _GivenCoils;
 			
-
 				struct appdata
 				{
 					float4 vertex : POSITION;
@@ -69,8 +58,6 @@
 					UNITY_FOG_COORDS(1)
 					float4 vertex : SV_POSITION;
 				};
-
-
 
 				v2f vert(appdata v)
 				{
@@ -93,7 +80,6 @@
 				{
 					return col.r + col.g + col.b;
 				}
-
 
 				fixed4 frag(v2f i) : SV_Target
 				{
@@ -127,8 +113,8 @@
 
 					// distance between points to plot
 					float chord = 0.001;
-
 					float rotation = 1;
+
 					// For every side, step around and away from center.
 					// start at the angle corresponding to a distance of chord
 					// away from centre.
@@ -164,9 +150,6 @@
 					float4 midCol = totalSummedCol / (sampledPoints);
 					col = midCol;
 
-					//col = currentMaxCol;
-					//col = (midCol + currentMaxCol) / 2;
-					
 					/**/
 					//------------------ RGB to Greyscale conversion --------------------------------
 					float closest = 1;
@@ -183,16 +166,9 @@
 								closest = greyAmmount;
 							}
 						}
-
 					}
 					closest = 1 - closest;
-					//float4 skaalaCol = tex2D(_HeightScale, float2(0.9, 0.5));
 					col = float4(closest, closest, closest, 1);
-					
-
-
-					//------------------ RGB to Greyscale conversion END --------------------------------
-					//col = skaalaCol;
 					return col;
 				}
 				ENDCG

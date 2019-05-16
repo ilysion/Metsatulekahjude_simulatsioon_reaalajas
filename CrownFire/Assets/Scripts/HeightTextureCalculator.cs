@@ -5,11 +5,9 @@ using UnityEngine;
 public class HeightTextureCalculator : MonoBehaviour
 {
     public static HeightTextureCalculator instance;
-
     public Camera TerrainRenderCam;
     public Material mapMat;
     public BurnRendererTest1 burnRendererCam;
-    
     private Texture2D mapDataTex2D;
     private int size;
     private Texture2D outColoredHeightTex2D;
@@ -24,10 +22,6 @@ public class HeightTextureCalculator : MonoBehaviour
     {
         size = burnRendererCam.GetComponent<BurnRendererTest1>().size;
     }
-    
-    void Update()
-    {
-    }
 
     public void reloadHeightTexture()
     {
@@ -37,7 +31,6 @@ public class HeightTextureCalculator : MonoBehaviour
 
     private void setMapHeightTex2D()
     {
-
         RenderTexture.active = TerrainRenderCam.targetTexture;
         Texture2D cameraImage = new Texture2D(TerrainRenderCam.targetTexture.width, TerrainRenderCam.targetTexture.height, TextureFormat.RGB24, false);
         cameraImage.ReadPixels(new Rect(0, 0, TerrainRenderCam.targetTexture.width, TerrainRenderCam.targetTexture.height), 0, 0);
@@ -45,7 +38,6 @@ public class HeightTextureCalculator : MonoBehaviour
         mapDataTex2D = new Texture2D(size, size, TextureFormat.RGB24, false);
         mapDataTex2D.wrapMode = TextureWrapMode.Repeat;
         mapDataTex2D = cameraImage;
-        //mapDataTex2D = (Texture2D)testTex;
     }
 
     private void makeColoredHeightTex()
@@ -53,7 +45,6 @@ public class HeightTextureCalculator : MonoBehaviour
         outColoredHeightTex2D = new Texture2D(size, size, TextureFormat.RGBA32, false);
         outColoredHeightTex2D.wrapMode = TextureWrapMode.Repeat;
 
-        //Very unefficient stuff here, but done only once at runtime so will be okay @ the moment
         // 0-0.5 langus, 0.5-1 tõus. protsendi jaoks languse puhul x2, tõusu puhul (tõus-0.5) x 2
         for (int i = 0; i < mapDataTex2D.width; i++)
         {
@@ -81,14 +72,7 @@ public class HeightTextureCalculator : MonoBehaviour
                 newPixelCol.g = heightMultiplier2;
                 newPixelCol.b = heightMultiplier3;
                 newPixelCol.a = heightMultiplier4;
-
                 outColoredHeightTex2D.SetPixel(i, j, newPixelCol);
-                /*
-                if(i == 256)
-                {
-                    print(outColoredHeightTex2D.GetPixel(i, j));
-                }
-                */
             }
         }
         outColoredHeightTex2D.Apply();

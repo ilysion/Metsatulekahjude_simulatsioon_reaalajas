@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class ConsoleManager : MonoBehaviour
 {
     public static ConsoleManager instance;
-
     public GameObject terrainObject;
     public Material burnAreaMat;
     public Material flatMapMat;
@@ -18,7 +17,6 @@ public class ConsoleManager : MonoBehaviour
     public Material RealisticChunkMat;
     public Texture2D tempMat;
     public Texture2D temp1Mat;
-
     public Texture2D humidityMat;
     public Texture2D humidity1Mat;
     public Material Skybox1;
@@ -30,18 +28,15 @@ public class ConsoleManager : MonoBehaviour
     public GameObject Sun;
     public GameObject Moon;
     public GameObject MainLight;
-
     public GameObject infoPanel;
     public GameObject buttonsPanel;
     public GameObject directionPanel;
     private TerrainTest1 terrainTest1;
-    
     public Text PassCounterText;
     public Text TimeText;
     public Text MapTypeText;
     public Text LoopingText;
     public Text SkyboxText;
-    
     public Button LoopTogglButton;
     public Button resetButton;
     public Button tempTogglButton;
@@ -51,19 +46,15 @@ public class ConsoleManager : MonoBehaviour
     public Button burnVisualsTogglButton;
     public Button SkyboxTogglButton;
     public Button uiEnableButton;
-
     public Button NButton;
     public Button SButton;
     public Button EButton;
     public Button WButton;
-
     public Camera burnRenderCam;
     public Camera mainRenderCam;
     private BurnRendererTest1 burnRenderer;
     private MapRendererTest1 mapRenderer;
-    
     public float loopTime = 30f;
-
     private bool tempEnabled = false;
     private bool humidityEnabled = false;
     private bool mapDataEnabled = false;
@@ -77,8 +68,6 @@ public class ConsoleManager : MonoBehaviour
     private float loopTimeStart;
     private int mapMatNumber = 1;
     private int skyboxNumber = 1;
-    
-
     private Color buttonClickedColor;
     private Color buttonUnclickedColor;
 
@@ -92,7 +81,6 @@ public class ConsoleManager : MonoBehaviour
     {
         buttonClickedColor = new Color32(255,200,0,160);
         buttonUnclickedColor = new Color32(255, 255, 255, 46);
-
         this.mapRenderer = mainRenderCam.GetComponent<MapRendererTest1>();
         this.burnRenderer = burnRenderCam.GetComponent<BurnRendererTest1>();
         LoopTogglButton.onClick.AddListener(LoopToggl);
@@ -104,17 +92,13 @@ public class ConsoleManager : MonoBehaviour
         SkyboxTogglButton.onClick.AddListener(togglSkybox);
         uiEnableButton.onClick.AddListener(togglUI);
         windTogglButton.onClick.AddListener(togglWind);
-
         NButton.onClick.AddListener(togglN);
         SButton.onClick.AddListener(togglS);
         EButton.onClick.AddListener(togglE);
         WButton.onClick.AddListener(togglW);
-
         MapTypeText.text = "map: Realistic";
         LoopingText.text = "Loop: Disabled";
         SkyboxText.text = "Skybox: Sun/Moon";
-
-        //sets the starting skybox nr 3
         skyboxNumber = 3;
         togglSkybox();
         togglN();
@@ -416,14 +400,5 @@ public class ConsoleManager : MonoBehaviour
         timeFromStart = 0f;
         passCounter = 0;
     }
-
-    /*
-     * render 50 passes
-     * for (int i = 0; i < 50; i++)
-        {
-            terrainTest1.passTimeAndRender(1f);
-        }
-        passCounter += 50;
-        mapRenderer.RenderTerrain();
-     */
+    
 }

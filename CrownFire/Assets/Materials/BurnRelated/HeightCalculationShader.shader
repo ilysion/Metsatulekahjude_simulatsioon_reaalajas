@@ -41,8 +41,6 @@
 					float4 vertex : SV_POSITION;
 				};
 
-
-
 				v2f vert(appdata v)
 				{
 					v2f o;
@@ -51,7 +49,6 @@
 					UNITY_TRANSFER_FOG(o,o.vertex);
 					return o;
 				}
-
 
 				fixed4 frag(v2f i) : SV_Target
 				{
@@ -69,9 +66,6 @@
 
 					float4 mapPosCol = tex2Dlod(_MainTex, float4(float2(myX, myY), 0, 0));
 					fixed4 col = tex2D(_MainTex, i.uv);
-
-					// apply fog
-					//UNITY_APPLY_FOG(i.fogCoord, col);
 
 					return col;
 				}

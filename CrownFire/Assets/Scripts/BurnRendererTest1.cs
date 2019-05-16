@@ -16,6 +16,28 @@ public class BurnRendererTest1 : MonoBehaviour
     public Texture2D fireStartTexture2D;
     public Vector2 seedPos = new Vector2(0.0f, 0.0f);
     public Camera TerrainRenderCam;
+    private Vector2 previousSeedPos;
+    private RenderTexture rt;
+    private RenderTexture rtburn;
+    private GameObject quad;
+    private MeshRenderer quadRenderer;
+    private Camera cam;
+    private Texture2D mapDataTex2D;
+    private Texture2D outColoredHeightTex2D;
+    private RenderTexture unchangedBurnAreaTexture;
+    private RenderTexture rtBurnToPass;
+    private bool heightTexRendered = false;
+    private double testStart;
+    private double movementSpeedTestStart;
+    private int framesPassed = 0;
+    bool LB = false;
+    bool LT = false;
+    bool RB = false;
+    bool RT = false;
+    bool movementSpeedStartReached = false;
+    bool samplePointReached1 = false;
+    bool samplePointReached2 = false;
+    private bool startBurnSet = false;
 
     [Range(1, 1000)]
     public int givenSampleCount = 9;
@@ -31,45 +53,15 @@ public class BurnRendererTest1 : MonoBehaviour
 
     [Range(0.001f, 10f)]
     public float burnSpeedMultiplier = 1;
-
-    private Vector2 previousSeedPos;
-    private RenderTexture rt;
-    private RenderTexture rtburn;
-    private GameObject quad;
-    private MeshRenderer quadRenderer;
-    private Camera cam;
-    private Texture2D mapDataTex2D;
-    private Texture2D outColoredHeightTex2D;
-    private RenderTexture unchangedBurnAreaTexture;
-    private bool heightTexRendered = false;
-
-
-    //Test1 stuff
-    private double testStart;
-    private double movementSpeedTestStart;
-    private int framesPassed = 0;
-    bool LB = false;
-    bool LT = false;
-    bool RB = false;
-    bool RT = false;
-    bool movementSpeedStartReached = false;
-    bool samplePointReached1 = false;
-    bool samplePointReached2 = false;
-    private bool startBurnSet = false;
-
-    private RenderTexture rtBurnToPass;
-
+    
     public void Awake()
     {
         cam = this.GetComponent<Camera>();
         quad = this.transform.Find("Quad").gameObject;
         quadRenderer = quad.GetComponent<MeshRenderer>();
-
         mapMat.SetFloat("_DeltaX", seedPos.x);
         mapMat.SetFloat("_DeltaY", seedPos.y);
         previousSeedPos = seedPos;
-        
-        //setting starting textures for reset
         unchangedBurnAreaTexture = rtburn;
     }
 
@@ -78,7 +70,6 @@ public class BurnRendererTest1 : MonoBehaviour
         float randomSeed = Random.Range(0, 100000);
         BurnAreaMaterial.SetFloat("_RandomSeed", randomSeed);
         Debug.Log("Randomly generated seed for shader: " + randomSeed);
-
         testStart = Time.time;
         //set the fire starting place texture
         mapMat.SetTexture("_BurningTex", fireStartTexture2D);
@@ -97,12 +88,10 @@ public class BurnRendererTest1 : MonoBehaviour
 
     public void RenderTerrain()
     {
-        //Debug.Log("Render Terrain");
         //Generate heights
         quadRenderer.material = mapMat;
         quadRenderer.material.SetFloat("_Scale", 3.0f);
         rt = new RenderTexture(size, size, 16, RenderTextureFormat.ARGB32);
-        //rt.filterMode = FilterMode.Bilinear;
         rt.Create();
         cam.targetTexture = rt;
         cam.Render();
@@ -127,41 +116,22 @@ public class BurnRendererTest1 : MonoBehaviour
     public void ResetBurnData()
     {
         mapMat.SetTexture("_BurningTex", fireStartTexture2D);
-        
     }
 
     private void GenerateBurn()
     {
-
-        //quadRenderer.material = mapMat;
-        //quadRenderer.material.SetTexture("_HeightTex", rt);
-        
-        
-        if (rtburn != null && rtburn.IsCreated())
-        {
-            // not sure why but release didnt work
-            //rtburn.Release();
-            //RenderTexture.ReleaseTemporary(rtburn);
-        }
-
         RenderTexture.Destroy(rtburn);
         rtburn = new RenderTexture(size, size, 16, RenderTextureFormat.ARGB32);
-        //rtburn = RenderTexture.GetTemporary(size, size, 16, RenderTextureFormat.ARGB32);
         rtburn.Create();
-
         cam.targetTexture = rtburn;
-
         if (!startBurnSet)
         {
             print("fire start texture set!");
             unchangedBurnAreaTexture = rtburn;
             startBurnSet = true;
         }
-        //mapMat.mainTexture = rtburn;
         cam.Render();
         mapMat.SetTexture("_BurningTex", rtburn);
-
-        //rtBurnToPass = new RenderTexture(rtburn);
         TerrainTest1.instance.GenerateBurn(rtburn);
 
         //----------------------For Pixel movement test uncomment the following line: ------------------------------------
@@ -176,7 +146,6 @@ public class BurnRendererTest1 : MonoBehaviour
         currentTex.wrapMode = TextureWrapMode.Clamp;
         currentTex.ReadPixels(new Rect(0, 0, size, size), 0, 0, false);
         currentTex.Apply();
-
         Color pixelLeftBottom = currentTex.GetPixel(0, 0);
         Color pixelLeftTop = currentTex.GetPixel(0, 512);
         Color pixelRightBottom = currentTex.GetPixel(512, 0);
@@ -186,8 +155,7 @@ public class BurnRendererTest1 : MonoBehaviour
         Color samplePointPixelTestStart = currentTex.GetPixel(256, 300);
         Color samplePointPixel1 = currentTex.GetPixel(256, 400);
         Color samplePointPixel2 = currentTex.GetPixel(256, 500);
-
-
+        
         //Setting the frame start time:
         float currentFrameStartTime = Time.time;
 

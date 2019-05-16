@@ -8,9 +8,7 @@
 		_NormalTex("Normal", 2D) = "bump" {}
 		_OcclusionMap("Occlusion", 2D) = "white" {}
 		_BurningTex("BuringTex (RGB)", 2D) = "white" {}
-
 		_TexScale("Texture scale", Float) = 1.0
-		
 		_Color ("Color", Color) = (1,1,1,1)
 		_WaterColor ("Water Col", Color) = (1,1,1,1)
 		_ShoreColor("Shore Col", Color) = (1,1,1,1)
@@ -20,15 +18,12 @@
 		_GlowColor("GlowColor", Color) = (1,1,1,1)
 		_GlowColor2("GlowColor2", Color) = (1,1,1,1)
 		_FlashColor("FlashColor", Color) = (1,1,1,1)
-
 		_FlashSpeed("FlashSpeed / 0 - Disabled" , Float) = 1.0
 		_GlowSpeed("GlowSpeed / 0 - Disabled", Float) = 1.0
-
 		_GlowIntensity("GlowIntensity", Range(0,3)) = 1.0
 		_GlowColorIntensity("GlowColorIntensity", Range(0,3)) = 1.0
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-
 	    _Delta("delta", Float) = 0.0
 	    _DeltaTime("deltaTime", Float) = 0.0
 	    _DeltaTimeFast("deltaTimeFast", Float) = 0.0
@@ -81,7 +76,6 @@
 			fixed3 viewDir;
 		};
 
-
 		float scale(float v, float min, float max) {
 			float ab = max - min;
 			return saturate((v - min) / ab);
@@ -89,12 +83,9 @@
 
 		void surf(Input IN, inout SurfaceOutputStandard o) {
 
-			
-
 			half4 noiseD1 = tex2D(_NoiseTex3, IN.uv_MainTex * 0.7 + float2(0.1, 0.1));
 			half4 noiseD2 = tex2D(_NoiseTex3, IN.uv_MainTex * 0.7 + float2(0.3, 0.3));
 			half2 noiseD = half2(noiseD1.x - 0.5, noiseD2.x - 0.5);
-
 
 			half4 c = _Color;
 			half4 data = tex2D(_MainTex, IN.uv_MainTex);
@@ -103,50 +94,20 @@
 			half4 dataD = tex2D(_MainTex, IN.uv_MainTex + noiseD * 0.02);
 			half4 occl = tex2D(_OcclusionMap, IN.uv_MainTex);
 
-			
 			half4 noise1 = tex2D(_NoiseTex, IN.uv_MainTex * 31.0);
 			half4 noise2 = tex2D(_NoiseTex, IN.uv_MainTex * 16.0);
 			half4 noise3 = tex2D(_NoiseTex, IN.uv_MainTex * 5.0 + float2(0.3, 0.2));
 			half4 noise4 = tex2D(_NoiseTex, IN.uv_MainTex * 9.0 + float2(0.2, 0.5));
 
 			half4 noise = (noise1 + noise2) / 2.0;
-
 			c = lerp(c, _WaterColor, (1.0 - data.x) * 5 - 5);
-			//---------------------------------------------------------
-			//Maastiku land tekstuur tuleb siit
-			//--------------------------------------------------------
 			c = tex2D(_LandTex, IN.uv_MainTex);
-			//----------------------------------------------------------
 
 			//noise
-			//c = c * noise;
 			c = c + half4(noise3.x * 0.4, noise3.x * 0.3, -noise3.x * 0.7, 0.0) * 0.2;
-			//end noise
-
 			half water = scale(data.y, 0.06, 0.07); 
 			half shore = scale(dataD.x, 0.02, 0.05);
-
-			//c = lerp(_ShoreColor, c, shore);
-
-			//c = lerp(_WaterColor, c, water);
-			
-			//data.y - heightmap pmst?
-			
-			/*
-			//Fore movement when pressing T ---------------------------------------
-			if (data.y < (0.01 + _Delta)) {
-			    //c = _BurningColor;
-				//c = lerp(_BurningColor, c, water);
-				c = (1,1,1,1);
-			}
-			*/
-			if (burningData.r < 1.0) {
-				//c = _GlowColor;
-			}
-
 			half4 cBefore = c;
-
-
 			// ----------------------- Pulsing and flashing effect -------------------------------------------
 			_DeltaTime = _DeltaTime * _GlowSpeed;
 			_DeltaTimeFast = _DeltaTimeFast * _FlashSpeed;
@@ -158,20 +119,14 @@
 			_BurningColor = _BurningColor * (1 - deltaRand) + _GlowColor * (deltaRand);
 			_BurningColor = _BurningColor * (1 - deltaFastRand) + _FlashColor * (deltaFastRand);
 
-			// ----------------------- Pulsing and flashing effect -------------------------------------------
-
-
 			//Realistlikum variant!
 			if (burningData.r < (1.0)) {
-				//c = (1,1,1,1);
-				//c = c * float4(burningData.r, burningData.r, burningData.r, 1);
 
 				//Põlenud osa
 				c = lerp( c, _BurntColor * 0.6, 0.99 - burningData.r );
 				if (landData.r < 0.15) {
 					c = lerp(c, _BurntColor * 0.6, 1.1 - burningData.r);
 				}
-
 
 				//Hetkel põlev osa
 				c = lerp( c  , _BurningColor * (1 + landData.r) * 25, burningData.r);
@@ -183,7 +138,6 @@
 				if (burningData.r > 0.3) {
 					c = lerp(c, (_BurningColor * _GlowIntensity + _GlowColor * _GlowColorIntensity + cBefore) * 5,burningData.r - 0.3);
 					if (landData.r < 0.2) {
-						//c = lerp(c, _GlowColor * (1 + landData.r), burningData.r);
 					}
 				}
 
@@ -191,72 +145,17 @@
 				if (burningData.r > 0.6) {
 					c = lerp(cBefore, (_BurningColor * _GlowIntensity + _GlowColor * _GlowColorIntensity + cBefore) * 5, 1 - burningData.r );
 					if (landData.r < 0.2) {
-						//c = lerp(c, _GlowColor * (1 + landData.r), burningData.r);
 					}
 				}
 				
-				
-				//c = c * (_BurntColor * (1 - burningData.r));
-				//c = c * (_BurningColor * burningData.r);
 				c = half4(1, 1, 1, 1);
 			}
-			//c *= _GlowColor;
-			//c *= _GlowIntensity;
-
-
-			//TAVALINE VÄRVIDEGA VARIANT
-			/*
-			if (burningData.r < (0.89)) {
-				c = _BurningColor;
-			}
-			if (burningData.r < 0.4) {
-				c = _BurntColor;
-			}
-			if (burningData.r <= 0.01) {
-				c = (1, 0, 0, 0);
-			}
-			*/
-			
-
-
-
-
-
-
-
-			/*
-			//Working example with burningdataTexture
-			//and???
-			if(c.b != _WaterColor.b){
-				if (c.r > _ShoreColor.r + 0.1 || c.r < _ShoreColor.r - 0.1) {
-					if (burningData.r < (0.75)) {
-						c = _BurningColor;
-					}
-					if (burningData.r < 0.5) {
-						c = _BurntColor;
-					}
-					if (burningData.r <= 0.0) {
-						c = (1, 0, 0, 0);
-					}
-				}
-				
-			}
-			*/
-
-			
-			
 			
 			o.Albedo = c.rgb;
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness + data.a * 0.5;
 			o.Occlusion = occl.x;
 			o.Alpha = c.a;
-			
-
-			/*
-			float3 normal = UnpackNormal(tex2D(_NormalTex, IN.uv_MainTex * _TexScale * 0.5));
-			o.Normal += normal;
-			*/
 			
 		}
 		ENDCG

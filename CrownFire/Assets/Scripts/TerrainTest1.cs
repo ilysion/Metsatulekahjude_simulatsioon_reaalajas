@@ -9,69 +9,54 @@ public class TerrainTest1 : MonoBehaviour
 
     public Material chunkMaterial;
     public Material BurnAreaMaterial;
-    
     public Camera burnRenderCam;
     public Camera mainRenderCam;
-
-    public int vcountx = 3; //Vertex count x
-    public int vcounty = 3; //Vertex count y
-    public int ccountx = 3; //Chunk count x
-    public int ccounty = 3; //Chunk count y
     public Vector3 scale = new Vector3(10f, 2f, 10f);
     public Texture flameStartingPoint;
-    
-    public float speedMultiplier = 1;
-    
-
     private Texture2D mapDataTexture;
     private RenderTexture mapDataRenderTexture;
     private RenderTexture aoRenderTexture;
     private RenderTexture burnAreaTexture;
-    private bool orto = true;
     private BurnRendererTest1 burnRenderer;
     private MapRendererTest1 mapRenderer;
+    public Chunk[] chunks;
+    private RenderTexture tempRT;
+    private RenderTexture current;
+    private RenderTexture last;
+    private bool orto = true;
     private bool realtimeActive = true;
-   
+    private bool isTerrainRendered = false;
     public int lodCount = 5;
     public float lodDistance = 10f;
-    public Chunk[] chunks;
-
+    public float speedMultiplier = 1;
     private float timePassed = 0f;
     private float lastRenderTime = 0f;
     private float timeBetweenRenders = 1f;
-
-    private RenderTexture tempRT;
-    private bool isTerrainRendered = false;
-
-    private RenderTexture current;
-    private RenderTexture last;
-
+    public int vcountx = 3; //Vertex count x
+    public int vcounty = 3; //Vertex count y
+    public int ccountx = 3; //Chunk count x
+    public int ccounty = 3; //Chunk count y
+    
     public void Awake()
     {
-
         chunkMaterial.SetTexture("_BurningTex", flameStartingPoint);
         instance = this;
-        
     }
 
     public void Start()
     {
         this.mapRenderer = mainRenderCam.GetComponent<MapRendererTest1>();
         this.burnRenderer = burnRenderCam.GetComponent<BurnRendererTest1>();
-        
     }
 
     public void Update()
     {
         float glowMultiplier = (1 + Mathf.Sin(Time.time)) * 0.5f;
         float flashMultiplier = Time.deltaTime * 10f;
-        //This print takes a lot of computing power, interesting tho???????????????
-        //print(glowMultiplier);
         chunkMaterial.SetFloat("_DeltaTime", (glowMultiplier));
         chunkMaterial.SetFloat("_DeltaTimeFast", (flashMultiplier));
         timePassed = Time.deltaTime;
         float timePassedMultiplier = 1 / ((1 / timePassed) / 60);
-
         
         if (Input.GetKeyDown(KeyCode.P))
         {
@@ -83,26 +68,14 @@ public class TerrainTest1 : MonoBehaviour
             GenerateTerrain();
             orto = !orto;
         }
-
-        /*
-        if (Input.GetKey(KeyCode.T))
-        {
-            BurnAreaMaterial.SetFloat("_Delta", timePassed);
-            burnRenderer.RenderTerrain();
-            mapRenderer.RenderTerrain();
-            print(timePassed);
-        }
-        */
-
+        
         if (realtimeActive)
         {
             if(lastRenderTime + timeBetweenRenders * ((1/speedMultiplier)) < Time.time)
             {
-                //print(timePassedMultiplier);
                 BurnAreaMaterial.SetFloat("_Delta", timePassedMultiplier);
                 chunkMaterial.SetFloat("_Delta", timePassedMultiplier);
                 burnRenderer.RenderTerrain();
-                //Remove this if no need for updating every time
                 if (!isTerrainRendered)
                 {
                     mapRenderer.RenderTerrain();
@@ -110,24 +83,19 @@ public class TerrainTest1 : MonoBehaviour
                 }
                 SetBurnData();
                 lastRenderTime = Time.time;
-
                 ConsoleManager.instance.AddPasses(1);
                 ConsoleManager.instance.updateTimeText(Time.deltaTime);
             }
         }
     }
-
-    //Currently just renders one frame with 10x speed
+    
     public void passTimeAndRender(float sec)
     {
         BurnAreaMaterial.SetFloat("_Delta", sec);
         burnRenderer.RenderTerrain();
         SetBurnData();
-        //ConsoleManager.instance.AddPasses(1);
-        //ConsoleManager.instance.updateTimeText(sec);
     }
-
-
+    
     public void GenerateTerrain(Texture2D mapDataTexture, RenderTexture rt, RenderTexture aort)
     {
         this.mapDataTexture = mapDataTexture;
@@ -138,10 +106,8 @@ public class TerrainTest1 : MonoBehaviour
     
     public void GenerateBurn(RenderTexture burnrt)
     {
-        
         Resources.UnloadUnusedAssets();
         burnAreaTexture = burnrt;
-
     }
 
     public void SetBurnData()
@@ -150,20 +116,15 @@ public class TerrainTest1 : MonoBehaviour
         chunkMaterial.SetTexture("_BurningTex", burnAreaTexture);
     }
     
-
     public void GenerateTerrain()
     {
-
-        //float time = Time.realtimeSinceStartup;
         DeleteChunks();
         chunks = new Chunk[ccountx * ccounty];
         Color[] mapCols = mapDataTexture.GetPixels();
-
         chunkMaterial.SetTexture("_MainTex", mapDataRenderTexture);
         chunkMaterial.SetTexture("_OcclusionMap", aoRenderTexture);
         chunkMaterial.SetTexture("_BurningTex", burnAreaTexture);
         BurnAreaMaterial.SetTexture("_MainTex", mapDataRenderTexture);
-        //meshRenderer.material.SetColor("_Color", Color.red);
 
         for (int i = 0; i < ccountx; i++)
         {
@@ -173,18 +134,12 @@ public class TerrainTest1 : MonoBehaviour
                 float fy = 1.0f / (float)ccounty;
                 Vector2 start = new Vector2(i * fx, j * fy);
                 Vector2 size = new Vector2(fx, fy);
-
-
                 Chunk leftChunk = i > 0 ? chunks[ccountx * j + (i - 1)] : null;
                 Chunk upChunk = j > 0 ? chunks[ccountx * (j - 1) + i] : null;
-
-
                 Chunk chunk = GenerateChunk(leftChunk, upChunk, start, size, mapCols);
-
                 chunks[ccountx * j + i] = chunk;
             }
         }
-        //Debug.Log("Generation time: " + (Time.realtimeSinceStartup - time));
     }
 
     public void DeleteChunks()
@@ -202,7 +157,6 @@ public class TerrainTest1 : MonoBehaviour
     {
         GameObject chunko = new GameObject("Chunk");
         chunko.transform.parent = this.transform;
-        //chunko.transform.position = new Vector3(i * scale.x, 0, j * scale.z);
         Chunk chunk = chunko.AddComponent<Chunk>();
 
         chunk.Init(lodCount, lodDistance);
